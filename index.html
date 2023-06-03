@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Electron SQLite Example</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.css">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>User Information</h3>
+          <div>
+            <input type="text" id="nameInput" placeholder="Name">
+            <input type="email" id="emailInput" placeholder="Email">
+            <button id="insertUserBtn">Insert User</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Video Information</h3>
+          <form id="dataForm">
+            <div id="dropzoneContainer" class="container">
+              <div class="form-group">
+                <label for="videoFile">Video File</label>
+                <input type="file" class="form-control-file" id="videoFile">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="videoName">Video Name</label>
+              <input type="text" class="form-control" id="videoName" placeholder="Enter video name">
+            </div>
+            <div class="form-group">
+              <label for="videoType">Video Type</label>
+              <select class="form-control" id="videoType">
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="startTime">Start Time</label>
+              <input type="time" class="form-control" id="startTime">
+            </div>
+            <div class="form-group">
+              <label for="endTime">End Time</label>
+              <input type="time" class="form-control" id="endTime">
+            </div>
+            <div class="form-group">
+              <label for="videoLength">Video Length</label>
+              <input type="text" class="form-control" id="videoLength" disabled>
+            </div>
+            <div class="form-group">
+              <label for="videoLocation">Video Location</label>
+              <input type="text" class="form-control" id="videoLocation" disabled>
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitForm">Submit</button>
+          </form>
+        </div>
+      </div>
+
+      
+
+      <ul id="usersList"></ul>
+      <ul id="videosList"></ul>
+    </div>
+    <div class="timeline">
+      <div class="primary-row">
+        <div class="video-file" id="video1"></div>
+        <div class="video-file" id="video2"></div>
+      </div>
+      <div class="secondary-row">
+        <!-- Secondary row content -->
+      </div>
+      <div class="hour-markers">
+        <!-- Hour markers content -->
+      </div>
+    </div
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script src="renderer.js"></script>
+    <script>
+      const dropzone = new Dropzone("#dropzoneContainer", {
+        url: "/",
+        acceptedFiles: "video/*",
+        autoProcessQueue: false
+      });
+    
+      dropzone.on("addedfile", function(file) {
+        const videoName = file.name;
+        const videoType = document.getElementById("videoType").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+    
+        getVideoDuration(file)
+          .then((duration) => {
+            const formattedDuration = moment.duration(duration, 'seconds').format('HH:mm:ss', { trim: false });
+            document.getElementById("videoLength").value = formattedDuration;
+            document.getElementById("videoLocation").value = file.path;
+            
+            ipcRenderer.send("videoDataInsertion", { videoName, videoType, startTime, endTime, videoLocation: file.path });
+          })
+          .catch((error) => {
+            console.error('Error calculating video duration:', error);
+          });
+    
+        // Remove the file from the dropzone after processing
+        dropzone.removeFile(file);
+      });
+    
+      function getVideoDuration(file) {
+        return new Promise((resolve, reject) => {
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+          video.src = URL.createObjectURL(file);
+      
+          video.onloadedmetadata = function() {
+            URL.revokeObjectURL(video.src);
+            const duration = video.duration;
+            resolve(duration);
+          };
+      
+          video.onerror = function() {
+            reject(new Error('Error loading video'));
+          };
+        });
+      }
+    </script>
+  </body>
+</html>
