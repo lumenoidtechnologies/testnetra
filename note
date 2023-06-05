@@ -1,0 +1,36 @@
+function createProgramWindow() {
+  programWindow = new BrowserWindow({
+    title: 'Program',
+    width: isDev ? 1400 : 980,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+    },
+    show: true,
+  });
+
+  if (isDev) {
+    programWindow.webContents.openDevTools();
+  }
+
+  programWindow.loadFile(path.join(__dirname, './renderer/program.html'));
+
+  programWindow.on('closed', () => {
+    programWindow = null;
+  });
+}
+
+
+
+<script>
+      // Program-related code goes here
+
+      document.addEventListener("DOMContentLoaded", function () {
+        flatpickr("#videoDate", {
+          minDate: "today",
+          maxDate: new Date().fp_incr(2), // Add 2 days to today's date
+        });
+      });
+    </script>

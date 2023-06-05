@@ -1,100 +1,162 @@
-const { ipcRenderer } = require('electron');
+window.$ = window.jQuery = require('jquery');
+const sqlite3 = require('sqlite3').verbose();
 
-// Retrieve the HTML elements
-const timelineContainer = document.getElementById('timelineContainer');
-const videosList = document.getElementById('videosList');
-
-// Fetch videos data from the main process
-ipcRenderer.send('fetchVideosData');
-
-// Receive the videos data from the main process and update the UI
-ipcRenderer.on('videosData', (event, videos) => {
-  // Clear the existing timeline and videos list
-  timelineContainer.innerHTML = '';
-  videosList.innerHTML = '';
-
-  // Calculate the total length of the day in minutes
-  const totalDayLength = 1440;
-
-  // Calculate the width for each video file based on its duration
-  videos.forEach((video) => {
-    const { videoName, startTime, endTime } = video;
-
-    // Calculate the duration of the video in minutes
-    const duration = calculateDuration(startTime, endTime);
-
-    // Calculate the width as a percentage
-    const videoWidth = (duration / totalDayLength) * 100;
-
-    // Create the video element
-    const videoElement = document.createElement('div');
-    videoElement.className = 'video';
-    videoElement.style.width = `${videoWidth}%`;
-    videoElement.textContent = videoName;
-
-    // Append the video element to the timeline container
-    timelineContainer.appendChild(videoElement);
-  });
-
-  // Update the videos list table
-  createVideosListTable(videos);
+const db = new sqlite3.Database('videos.db');
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS uploads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      url TEXT,
+      size INTEGER,
+      date TEXT
+    )
+  `);
 });
+const videoForm = document.getElementById('videoForm');
 
-// Function to calculate the duration between two time values in minutes
-function calculateDuration(startTime, endTime) {
-  const [startHour, startMinute] = startTime.split(':');
-  const [endHour, endMinute] = endTime.split(':');
+videoForm.addEventListener('submit', (event) => {
+  event.preventDefault();
 
-  const startTotalMinutes = parseInt(startHour) * 60 + parseInt(startMinute);
-  const endTotalMinutes = parseInt(endHour) * 60 + parseInt(endMinute);
+  const videoName = document.getElementById('videoName').value;
+  const videoType = document.getElementById('videoType').value;
+  const startTime = document.getElementById('startTime').value;
+  const endTime = document.getElementById('endTime').value;
+  const date = document.getElementById('videoDate').value;
+  const url = document.getElementById('url').value;
 
-  return endTotalMinutes - startTotalMinutes;
-}
+ 
+  
 
-// Function to create the videos list table
-function createVideosListTable(videos) {
-  // Create the table element
-  const table = document.createElement('table');
-  table.classList.add('table');
+  db.serialize(() => {
+    const selectQuery = db.prepare(
+      `SELECT * FROM videos WHERE date = ? AND ((startTime <= ? AND endTime > ?) OR (startTime < ? AND endTime >= ?))`
+    );
 
-  // Create the table header
-  const tableHeader = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  const headers = ['Video Name', 'Start Time', 'End Time', 'Duration'];
+    selectQuery.all(date, startTime, startTime, endTime, endTime, (error, rows) => {
+      if (error) {
+        console.error('Error selecting data:', error.message);
+      } else {
+        if (rows.length > 0) {
+          const errorMessage = 'Video time conflict. Please choose a different time slot.';
+          console.error(errorMessage);
+          dialog.showErrorBox('Error', errorMessage);
+          return;
+        }
 
-  headers.forEach((header) => {
-    const th = document.createElement('th');
-    th.textContent = header;
-    headerRow.appendChild(th);
-  });
+        const insertQuery = db.prepare(
+          `INSERT INTO videos (videoName, videoType, startTime, endTime, date, url) VALUES (?, ?, ?, ?, ?, ?)`
+        );
 
-  tableHeader.appendChild(headerRow);
-  table.appendChild(tableHeader);
+        insertQuery.run(videoName, videoType, startTime, endTime, date, url, (error) => {
+          if (error) {
+            console.error('Error inserting data:', error.message);
+          } else {
+            console.log('Data inserted successfully!');
+          }
+        });
 
-  // Create the table body
-  const tableBody = document.createElement('tbody');
-  videos.forEach((video) => {
-    const row = document.createElement('tr');
-    const { videoName, startTime, endTime } = video;
-
-    const duration = calculateDuration(startTime, endTime);
-
-    const columns = [videoName, startTime, endTime, `${duration} mins`];
-
-    columns.forEach((column) => {
-      const td = document.createElement('td');
-      td.textContent = column;
-      row.appendChild(td);
+        insertQuery.finalize();
+      }
     });
 
-    tableBody.appendChild(row);
+    selectQuery.finalize();
   });
 
-  table.appendChild(tableBody);
+  videoForm.reset();
+});
 
-  // Append the table to the videosList container
-  videosList.appendChild(table);
+
+
+const dropzone = new Dropzone("#dropzoneContainer", {
+  url: "/",
+  acceptedFiles: "video/*",
+  autoProcessQueue: false,
+});
+
+dropzone.on("addedfile", function(file) {
+  const formData = new FormData();
+  formData.append("video", file);
+
+  $.ajax({
+    url: "http://localhost:3000/upload",
+    method: "POST",
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(response) {
+      console.log("File uploaded successfully");
+      const fileUrl = `https://localhost:3000/${file.name}`;
+      const fileSize = file.size;
+      const uploadDate = new Date().toISOString();
+
+      const videoData = {
+        url: fileUrl,
+        size: fileSize,
+        date: uploadDate
+      };
+
+      // Perform SQLite CRUD operation here
+      db.serialize(() => {
+        db.run(
+          `INSERT INTO uploads (url, size, date) VALUES (?, ?, ?)`,
+          [videoData.url, videoData.size, videoData.date],
+          function(error) {
+            if (error) {
+              console.error("Error inserting data:", error.message);
+            } else {
+              console.log("Data inserted successfully!");
+            }
+          }
+        );
+      });
+    },
+    error: function(error) {
+      console.error("Error uploading file:", error);
+    }
+  });
+
+  // Remove the file from the dropzone after processing
+  dropzone.removeFile(file);
+});
+// Handle closing of the renderer window
+window.addEventListener('beforeunload', () => {
+  db.close();
+});
+
+// Create videos table if it doesn't exist
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS videos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      videoName TEXT,
+      videoType TEXT,
+      startTime TEXT,
+      endTime TEXT,
+      date TEXT,
+      url TEXT
+    )
+  `);
+});
+
+
+// Function to open the video entries window
+function openVideoEntriesWindow() {
+  ipcRenderer.send('open-video-entries-window');
 }
 
-// Send IPC message to the main process to fetch videos data
-ipcRenderer.send('fetchVideosData');
+// Event handler for receiving video entries data from the main process
+ipcRenderer.on('video-entries-data', (event, videoEntries) => {
+  // Generate HTML table rows using videoEntries data and append them to the table body
+  const tableBody = document.getElementById('videoEntriesTableBody');
+
+  videoEntries.forEach((entry) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${entry.id}</td>
+      <td>${entry.url}</td>
+      <td>${entry.size}</td>
+      <td>${entry.date}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+});

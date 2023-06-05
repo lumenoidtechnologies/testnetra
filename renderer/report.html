@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.css">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 p-5">
+          <h1 class="text-center text-white">Report</h1>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <canvas id="columnChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-4">
+          <canvas id="pieChart1"></canvas>
+        </div>
+        <div class="col-sm-4">
+          <canvas id="pieChart2"></canvas>
+        </div>
+        <div class="col-sm-4">
+          <canvas id="pieChart3"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4">
+          <canvas id="pieChart4"></canvas>
+        </div>
+        <div class="col-sm-4">
+          <canvas id="pieChart5"></canvas>
+        </div>
+      </div>
+    </div>
+    <div  class="container">
+      <div class="row">
+       
+        <div class="col"
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 p-5">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Node</th>
+                <th>Disconnects</th>
+                <th>Uptime</th>
+                <th>Streaming Hours</th>
+                <th>Lost Hours</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Node 1</td>
+                <td>10</td>
+                <td>500</td>
+                <td>120</td>
+                <td>80</td>
+              </tr>
+              <tr>
+                <td>Node 2</td>
+                <td>5</td>
+                <td>400</td>
+                <td>150</td>
+                <td>50</td>
+              </tr>
+              <tr>
+                <td>Node 3</td>
+                <td>8</td>
+                <td>450</td>
+                <td>180</td>
+                <td>20</td>
+              </tr>
+              <tr>
+                <td>Node 4</td>
+                <td>12</td>
+                <td>550</td>
+                <td>90</td>
+                <td>110</td>
+              </tr>
+              <tr>
+                <td>Node 5</td>
+                <td>3</td>
+                <td>350</td>
+                <td>200</td>
+                <td>60</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Sample data for the column chart (replace with your own data)
+      const nodeData = {
+        labels: ['Node 1', 'Node 2', 'Node 3', 'Node 4', 'Node 5'],
+        disconnects: [10, 5, 8, 12, 3], // Number of times each node was disconnected
+        uptime: [500, 400, 450, 550, 350] // Duration of uptime for each node (in seconds)
+      };
+
+      // Convert the disconnects and uptime values to their logarithm
+      const disconnectsLog = nodeData.disconnects.map(value => Math.log(value));
+      const uptimeLog = nodeData.uptime.map(value => Math.log(value));
+
+      // Create the column chart data
+      const columnData = {
+        labels: nodeData.labels,
+        datasets: [
+          {
+            label: 'Disconnects (Log)',
+            data: disconnectsLog,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Uptime (Log)',
+            data: uptimeLog,
+            backgroundColor: 'rgba(192, 75, 192, 0.2)',
+            borderColor: 'rgba(192, 75, 192, 1)',
+            borderWidth: 1
+          }
+        ]
+      };
+
+      // Configure the column chart options
+      const columnOptions = {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Log Value'
+            }
+          }
+        }
+      };
+
+      // Get the column chart canvas element
+      const columnCtx = document.getElementById('columnChart').getContext('2d');
+
+      // Create the column chart
+      new Chart(columnCtx, {
+        type: 'bar',
+        data: columnData,
+        options: columnOptions
+      });
+
+
+      // Sample data for the pie charts (replace with your own data)
+      const pieData = [
+        {
+          node: 'Node 1',
+          streamingHours: 120,
+          lostHours: 80
+        },
+        {
+          node: 'Node 2',
+          streamingHours: 150,
+          lostHours: 50
+        },
+        {
+          node: 'Node 3',
+          streamingHours: 180,
+          lostHours: 20
+        },
+        {
+          node: 'Node 4',
+          streamingHours: 90,
+          lostHours: 110
+        },
+        {
+          node: 'Node 5',
+          streamingHours: 200,
+          lostHours: 60
+        }
+      ];
+
+      // Create the pie charts
+      pieData.forEach((data, index) => {
+        const pieDataset = [
+          {
+            data: [data.streamingHours, data.lostHours],
+            backgroundColor: ['rgba(255, 255, 0, 0.2)', 'rgba(255, 0, 0, 0.2)'],
+            borderColor: ['rgba(255, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
+            borderWidth: 1
+          }
+        ];
+
+        const pieOptions = {
+          responsive: true
+        };
+
+        const chartCanvas = document.getElementById(`pieChart${index + 1}`).getContext('2d');
+
+        new Chart(chartCanvas, {
+          type: 'pie',
+          data: {
+            labels: ['Streaming Hours', 'Lost Hours'],
+            datasets: pieDataset
+          },
+          options: pieOptions
+        });
+      });
+    </script>
+  </body>
+  <script src="./../renderer.js"></script>
+</html>

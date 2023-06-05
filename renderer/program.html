@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Program</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://visjs.github.io/vis-timeline/styles/timeline.css">
+
+    <script src="https://visjs.github.io/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
+    
+   
+<script>
+  // Program-related code goes here
+
+  document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#videoDate", {
+      minDate: "today",
+      maxDate: new Date().fp_incr(2), // Add 2 days to today's date
+    });
+  });
+</script>
+  </head>
+  <body>
+    <section>
+      <div class="row">
+        <div class="col-md-3">
+          
+          <div id="dropVideo" class="card m-3">
+            <div class="card-header">
+              <h4 class="card-title text-white">uploader</h4>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-control-label" for="upload">Upload</label>
+                <div class="dropzone" id="dropzoneContainer"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card m-3">
+            <div class="card-header">
+              <h4 class="card-title text-white">Data Explorer</h4>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <a href="#" id="  videoEntriesWindow" class="btn btn-outline-light m-1" onclick="openVideoEntriesWindow()">Video Entries</a>
+              </div>
+              
+              <div class="form-group">
+                <a href="#" class="btn btn-outline-light m-1">Slot Entries </a>
+              </div>
+            </div>
+
+            
+          </div>
+          <div id="#playerCard" class="card m-3">
+            <div id="videoPlayerContainer" class=" " ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+              <div class="card-body">
+                <video id="player" controls>
+                  <source id="videoSource" src="" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+        <div class="col-md-6">
+          <div class="container">
+            <div class="row p-5">
+              <div class="col-md-12 ">
+                <h3 class="text-center"> Video Information </h3>
+                <form id="videoForm">
+                  <div class="mb-3">
+                    <label for="videoName" class="form-label">Video Name:</label>
+                    <input type="text" class="form-control" id="videoName" name="videoName" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="videoDate" class="form-label">Date:</label>
+                    <input type="date" class="form-control" id="videoDate" name="videoDate" required min="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+2 days')) ?>">
+                  </div>
+                  <div class="mb-3">
+                    <label for="videoType" class="form-label">Video Type:</label>
+                    <select class="form-select" id="videoType" name="videoType" required>
+                      <option value="primary">Primary</option>
+                      <option value="secondary">Secondary</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="startTime" class="form-label">Start Time:</label>
+                    <input type="time" class="form-control" id="startTime" name="startTime" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="endTime" class="form-label">End Time:</label>
+                    <input type="time" class="form-control" id="endTime" name="endTime" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="url" class="form-label">URL:</label>
+                    <input type="url" class="form-control" id="url" name="url" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card my-3">
+            <a href="./index.html" class="btn btn-outline-light m-3"> Home ></a>
+          </div>
+          <div class="card mb-3">
+            <a href="./report.html" class="btn btn-outline-light m-3">Reports ></a>
+          </div>
+          <div class="card mb-3">
+            <a href="./index.html" class="btn btn-outline-light m-3">Help</a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="container bg-light">
+          <div class="row">
+            <div class="col-md-12">
+              <div id="timeline"></div>
+              <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                  // Create a new DataSet with timeline items
+                  var items = new vis.DataSet([
+                    { id: 1, content: "Event 1", start: "2023-06-05T08:00:00", end: "2023-06-05T10:00:00" },
+                    { id: 2, content: "Event 2", start: "2023-06-05T12:00:00", end: "2023-06-05T14:00:00" },
+                    { id: 3, content: "Event 3", start: "2023-06-05T16:00:00", end: "2023-06-05T18:00:00" }
+                  ]);
+            
+                  // Set options for the timeline
+                  var options = {
+                    // Set the minimum and maximum zoom levels to one day
+                    zoomMin: 1000 * 60 * 60 * 24, // One day in milliseconds
+                    zoomMax: 1000 * 60 * 60 * 24, // One day in milliseconds
+            
+                    // Set the initial zoom level to show hours
+                    zoomable: true,
+                    zoomKey: "ctrlKey",
+            
+                    // Set the format of the time axis to display hours
+                    format: {
+                      minorLabels: {
+                        hour: "HH:mm", // Display hours and minutes (e.g., 14:30)
+                      },
+                      majorLabels: {
+                        hour: "HH:mm", // Display hours and minutes (e.g., 14:30)
+                      },
+                    },
+            
+                    // Set dark mode
+                    
+                    template: function (item, element, data) {
+                      element.style.backgroundColor = "#333";
+                      element.style.color = "#fff";
+                      element.style.borderColor = "#444";
+                    }
+                  };
+            
+                  // Create a new timeline instance
+                  var timeline = new vis.Timeline(document.getElementById("timeline"), items, options);
+                });
+              </script>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
+
+
+
+<script src="./../renderer.js"></script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    flatpickr("#videoDate", {
+      minDate: "today",
+      maxDate: new Date().fp_incr(2), // Add 2 days to today's date
+    });
+  });
+
+  const dropzone = new Dropzone("#dropzoneContainer", {
+  url: "/",
+  acceptedFiles: "video/*",
+  autoProcessQueue: false
+});
+dropzone.on("addedfile", function(file) {
+  const formData = new FormData();
+  formData.append("video", file);
+
+  $.ajax({
+    url: "http://localhost:3000/upload", // Update the URL with your server endpoint for file upload
+    method: "POST",
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(response) {
+      console.log("File uploaded successfully");
+      // Handle any success response from the server if needed
+    },
+    error: function(error) {
+      console.error("Error uploading file:", error);
+      // Handle the error response from the server if needed
+    }
+  });
+
+  // Remove the file from the dropzone after processing
+  dropzone.removeFile(file);
+});
+
+
+  function getVideoDuration(file) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.src = URL.createObjectURL(file);
+  
+      video.onloadedmetadata = function() {
+        URL.revokeObjectURL(video.src);
+        const duration = video.duration;
+        resolve(duration);
+      };
+  
+      video.onerror = function() {
+        reject(new Error('Error loading video'));
+      };
+    });
+  }
+</script>
+<script>
+  function handleDrop(event) {
+    event.preventDefault();
+    var file = event.dataTransfer.files[0];
+    playVideo(file);
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault();
+  }
+
+  function playVideo(file) {
+    var player = document.getElementById('player');
+    var videoSource = document.getElementById('videoSource');
+
+    var fileURL = URL.createObjectURL(file);
+    videoSource.src = fileURL;
+    player.load();
+    player.play();
+  }
+</script>
+
+  </body>
+</html>

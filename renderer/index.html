@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Electron SQLite Example</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.css">
+    <link rel="stylesheet" href="main.css">
+
+ 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  </head>
+  <body>
+    <section class="d-flex flex-column" style="height:500px;">
+         
+      <div class="row flex-grow-1"> 
+          <div class="col-md-12 flex-grow-1">
+              <div class="d-flex justify-content-around align-items-center flex-grow-1"> 
+                  <div class="p-2">
+                      <nav class="nav flex-column   falsetab">
+                          <a class="nav-link  flex-fill active" aria-current="page" href="index.html"><i class="fa-solid fa-house-laptop" style="color: #868fbf;"></i>Home</a>
+                          <a class="nav-link flex-fill" href="program.html"><i class="fa-regular fa-circle-play" style="color: #868fbf;"></i>Program</a>
+                          <a class="nav-link flex-fill" href="clients.html"><i class="fa-solid fa-computer" style="color: #868fbf;"></i>Nodes</a>
+                          <a class="nav-link flex-fill" href="report.html"><i class="fa-solid fa-toolbox" style="color: #868fbf;"></i>Reports</a>
+                          <a class="nav-link flex-fill" href="login.html" tabindex="-1" aria-disabled="true"><i class="fa-solid fa-gear" style="color: #868fbf;"></i>Setings</a>
+                        </nav>
+                  </div>
+  
+                  <div class="d-flex flex-column align-items-center flex-grow-1">
+                      <div class="col-sm-12 homerow">
+                          <img class="homelogo" src="./assets/logo.png" />
+                          <h2>Welcome to Netra Prime</h2>
+                      </div>
+                      <div class="col-sm-12 homerow ">
+                          <div class="row ">
+                              <div class=" col-6 p-4">
+                                  <div class="card" >
+                                      <h3 class="card-title">3</h3>
+                                      <h3 class="card-title">Active Nodes</h3>
+                                      <div class="card-body">
+                                        <p class="card-text"></p>
+                                      </div>
+                                    </div>
+                              </div>
+              
+                              <div class="col-6 p-4">
+                                  <div class="card" >
+                                      <h3 class="card-title">2</h3>
+                                      <h3 class="card-title">Nodes Down</h3>
+                                      <div class="card-body">
+                                        <p class="card-text"></p>
+                                      </div>
+                                    </div>
+              
+                              </div>
+
+                              <div class=" col-6 p-4">
+                                  <div class="card" >
+                                      <h3 class="card-title">12</h3>
+                                      <h3 class="card-title">Scheduled  Files</h3>
+                                      <div class="card-body">
+                                        <p class="card-text"></p>
+                                      </div>
+                                    </div>
+                              </div>
+              
+                              <div class="col-6 p-4">
+                                  <div class="card" >
+                                      
+                                      <h3 class="card-title">Now Playing:</h3>
+                                      <div class="card-body">
+                                        <p class="card-text">stream:{primary} Big Bug Bunny.m3u8<br>
+                                          
+                                  
+                                        </p>
+                                      </div>
+                                    </div>
+              
+                              </div>
+
+                          </div>
+                      </div>
+  
+                  </div>
+  
+              </div>
+          </div>
+      </div>
+      
+  </section>
+  <script src="./../renderer.js"></script>
+    
+    
+    
+  </body>
+</html>
