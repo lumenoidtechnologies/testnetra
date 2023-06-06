@@ -160,3 +160,41 @@ ipcRenderer.on('video-entries-data', (event, videoEntries) => {
     tableBody.appendChild(row);
   });
 });
+
+
+
+// Request data from the main process
+ipcRenderer.send('fetchData');
+
+// Receive the data from the main process
+ipcRenderer.on('fetchedData', (event, data) => {
+  // Render the data in the UI
+  // You can use JavaScript frameworks or plain DOM manipulation to render the data in the desired format
+});
+
+
+
+// Receive upload list
+ipcRenderer.on('uploadList', (event, uploads) => {
+  uploadsTableBody.innerHTML = '';
+  uploads.forEach(upload => {
+    const row = document.createElement('tr');
+    const idCell = document.createElement('td');
+    const urlCell = document.createElement('td');
+    const sizeCell = document.createElement('td');
+    const dateCell = document.createElement('td');
+    idCell.textContent = upload.id;
+    urlCell.textContent = upload.url;
+    sizeCell.textContent = upload.size;
+    dateCell.textContent = upload.date;
+    row.appendChild(idCell);
+    row.appendChild(urlCell);
+    row.appendChild(sizeCell);
+    row.appendChild(dateCell);
+    uploadsTableBody.appendChild(row);
+  });
+});
+
+// Request upload list
+ipcRenderer.send('getUploadList');
+

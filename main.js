@@ -1,8 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 let mainWindow;
 let programWindow;
 
@@ -18,11 +16,6 @@ function createMainWindow() {
   });
   mainWindow.loadFile(path.join(__dirname, './renderer/index.html'));
 
-  // Open the developer tools in dev mode
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
-
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -32,41 +25,31 @@ function createMainWindow() {
 function createProgramWindow() {
   programWindow = new BrowserWindow({
     title: 'Program',
-    width: isDev ? 1400 : 980,
-    height: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
     },
-    show: true,
+    fullscreen: true,
+    show: false,
+    
   });
-
-  if (isDev) {
-    programWindow.webContents.openDevTools();
-  }
 
   programWindow.loadFile(path.join(__dirname, './renderer/program.html'));
 
   child1 = new BrowserWindow({
     parent: programWindow,
-    width: isDev ? 1400 : 980,
-    height:800,
-    //frame:false - borderless menuless
-    
-  })
-  child1.loadFile(path.join(__dirname,'./renderer/vindeo-entries.html'));
- 
+    width:  1200,
+    height: 800,
+  });
+  child1.loadFile(path.join(__dirname, './renderer/vindeo-entries.html'));
 
   child2 = new BrowserWindow({
     parent: programWindow,
-    width: isDev ? 1400 : 980,
-    height:800,
-    //frame:false - borderless menuless
-    
-  })
-  child2.loadFile(path.join(__dirname,'./renderer/slot-entries.html'));
-  
+    width:  1200,
+    height: 800,
+  });
+  child2.loadFile(path.join(__dirname, './renderer/slot-entries.html'));
 
   programWindow.on('closed', () => {
     programWindow = null;
@@ -76,7 +59,6 @@ function createProgramWindow() {
 // App ready event
 app.on('ready', () => {
   createMainWindow();
-  
 
   // Event handler for opening the video entries window
   ipcMain.on('open-video-entries-window', () => {
@@ -95,6 +77,33 @@ app.on('ready', () => {
   });
 });
 
+// Handle the event when the renderer process requests data
+ipcMain.on('fetchData', (event) => {
+  // Execute an SQL query to retrieve data
+  db.all('SELECT * FROM uploads', (error, results) => {
+    if (error) {
+      // Handle error
+      console.error(error);
+      return;
+    }
+
+    // Send the query results to the renderer process
+    event.reply('fetchedData', results);
+  });
+});
+
+
+
+// Get upload list
+ipcMain.on('getUploadList', (event) => {
+  db.all(`SELECT * FROM uploads`, [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+    }
+    event.reply('uploadList', rows);
+  });
+});
+
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -106,6 +115,5 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (mainWindow === null) {
     createMainWindow();
-    
   }
 });

@@ -5,12 +5,12 @@
   "description": "app for steaming apps to nodes",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder"
   },
   "author": "Lumenoid Studios",
   "license": "EULA",
   "dependencies": {
-    "electron": "^25.0.1",
     "ffmpeg-static": "^5.1.0",
     "ffprobe-static": "^3.1.0",
     "flatpickr": "^4.6.13",
@@ -19,5 +19,19 @@
     "jquery": "^3.7.0",
     "moment": "^2.29.4",
     "sqlite3": "^5.1.6"
+  },
+  "build": {
+    "appId": "com.lumenoidstudios.netra",
+    "productName": "NetraPrime",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "devDependencies": {
+    "electron": "^25.0.1",
+    "electron-builder": "^23.6.0"
   }
 }
